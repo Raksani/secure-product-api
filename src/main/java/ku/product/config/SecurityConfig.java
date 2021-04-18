@@ -8,12 +8,20 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Autowired
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     // create authentication manager bean to use with JWT
     @Bean
@@ -31,7 +39,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //                for a login request only. So, we need to authenticate before accessing to '/api/products'
                 .antMatchers("/api/auth/**").permitAll()
                 .anyRequest()
-                .authenticated();
+                .authenticated()
+        // use staeless session, so user's state is not stored
+        .and()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        // must provide jwt token
+        .and()
+                .exceptionHandling()
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+        .and()
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
     // use password encryption: bcrypt

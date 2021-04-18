@@ -1,5 +1,6 @@
 package ku.product.service;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -12,6 +13,7 @@ import java.security.Key;
 
 @Service
 public class JwtService {
+
     private Key key;
 
     @PostConstruct
@@ -19,11 +21,25 @@ public class JwtService {
         key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
     }
 
-    public String generatetoken(Authentication authentication) {
+    public String generateToken(Authentication authentication) {
         User principal = (User) authentication.getPrincipal();
         return Jwts.builder()
                 .setSubject(principal.getUsername())
                 .signWith(key)
                 .compact();
+    }
+
+    public boolean validateToken(String jwt) {
+        Jwts.parser().setSigningKey(key).parseClaimsJws(jwt);
+        return true;
+    }
+
+    public String getUsernameFromJwt(String jwt) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(key)
+                .parseClaimsJws(jwt)
+                .getBody();
+
+        return claims.getSubject();
     }
 }

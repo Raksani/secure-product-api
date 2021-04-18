@@ -7,7 +7,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import sun.rmi.runtime.Log;
 
 @Service
 public class AuthenticationService {
@@ -19,13 +18,11 @@ public class AuthenticationService {
     private JwtService jwtService;
 
     public String login(LoginDto loginDto) {
-        Object principal;
-        Object credentials;
         UsernamePasswordAuthenticationToken pwdToken =
                 new UsernamePasswordAuthenticationToken(
                         loginDto.getUsername(), loginDto.getPassword());
         Authentication authentication = authenticationManager.authenticate(pwdToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        return jwtService.generatetoken(authentication);
+        return jwtService.generateToken(authentication);
     }
 }
